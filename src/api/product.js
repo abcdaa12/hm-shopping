@@ -11,7 +11,7 @@ export const getProList = (obj) => {
     }
   })
 }
-
+// get请求用params，post请求走第二个参数
 // 获取商品详情数据
 export const getProDetail = (goodsId) => {
   return request.get('/goods/detail', {
