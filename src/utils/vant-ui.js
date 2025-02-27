@@ -1,6 +1,6 @@
 // 按需导入vant
 import Vue from 'vue'
-import { Button, Switch, Rate, Tabbar, TabbarItem, Swipe, SwipeItem, Grid, GridItem, Search, Toast, NavBar, Icon, ActionSheet, Dialog } from 'vant'
+import { Button, Switch, Rate, Tabbar, TabbarItem, Swipe, SwipeItem, Grid, GridItem, Search, Toast, NavBar, Icon, ActionSheet, Dialog, Checkbox } from 'vant'
 
 Vue.use(GridItem)
 Vue.use(Search)
@@ -17,4 +17,5 @@ Vue.use(NavBar)
 Vue.use(Icon)
 Vue.use(ActionSheet)
 Vue.use(Dialog)
+Vue.use(Checkbox)
 Vue.config.productionTip = false

@@ -65,19 +65,20 @@
 
     <!-- 底部 -->
     <div class="footer">
-      <div class="icon-home">
+      <div class="icon-home" @click="$router.push('/')">
         <van-icon name="wap-home-o" />
         <span>首页</span>
       </div>
-      <div class="icon-cart">
+      <div class="icon-cart" @click="$router.push('/cart')">
         <span v-if="cartTotal > 0" class="num">{{ cartTotal }}</span>
+        <!-- <span v-if="cartList > 0" class="num">{{ cartList.length }}</span> -->
         <van-icon name="shopping-cart-o" />
         <span>购物车</span>
       </div>
       <div class="btn-add" @click="addFn">加入购物车</div>
       <div class="btn-buy" @click="buyFn">立刻购买</div>
     </div>
-    <!-- 购物车弹层 -->
+    <!-- 购物车和立即购买的公用弹层 -->
     <van-action-sheet v-model="showPannel" :title="mode === 'cart' ? '加入购物车' : '立刻购买'">
   <div class="product">
     <div class="product-title">
@@ -101,7 +102,7 @@
     </div>
     <div class="showbtn" v-if="detail.stock_total > 0">
       <div class="btn" v-if="mode === 'cart'" @click="addCart">加入购物车</div>
-      <div class="btn now" v-else>立刻购买</div>
+      <div class="btn now" v-else @click="goBuyNow">立刻购买</div>
     </div>
     <div class="btn-none" v-else>该商品已抢完</div>
   </div>
@@ -115,8 +116,12 @@ import { getProComments, getProDetail } from '@/api/product'
 import defaultImg from '@/assets/default-avatar.png'
 import CountBox from '@/components/CountBox.vue'
 import { addCart } from '@/api/cart'
+// import { mapState } from 'vuex'
+import loginConfirm from '@/mixins/loginConfirm'
 export default {
   name: 'ProDetail',
+  // 多个混入的时候后面的优先级更高
+  mixins: [loginConfirm],
   components: {
     CountBox
   },
@@ -167,26 +172,12 @@ export default {
       this.mode = 'buyNow'
       this.showPannel = true
     },
+    // 消息确认框，确认是否登录，就是token是否存在
+    // 先判断token是否存在（用户是否登录）
+    // 如果token不存在，弹出确认框
+    // 如果token存在，继续请求操作
     async addCart () {
-      // 先判断token是否存在（用户是否登录）
-      // 如果token不存在，弹出确认框
-      // 如果token存在，继续请求操作
-      if (!this.$store.getters.token) {
-        // 确认框
-        // console.log('queren')
-        this.$dialog.confirm({ title: '温馨提示', message: '此时需要先登录才能继续操作哦', confirmButtonText: '去登录', cancelButtonText: '再逛逛' })
-        // 点击确认
-          .then(() => {
-            // 如果希望跳转到登录页面之后，登陆成功就跳转到登陆之前的页面，需要在跳转的时候携带参数（当前的路径地址）
-            this.$router.replace({
-              path: '/login',
-              query: {
-                backUrl: this.$route.fullPath
-              }
-            })
-          })
-          // 点击取消
-          .catch(() => {})
+      if (this.loginConfirm()) {
         return
       }
       const { data } = await addCart(this.goodsId, this.addCount, this.detail.skuList[0].goods_sku_id)
@@ -194,6 +185,23 @@ export default {
       console.log(this.cartTotal)
       this.$toast('加入购物车成功')
       this.showPannel = false
+      // console.log(this.cartTotal)
+    },
+    goBuyNow () {
+      // 未登录的处理，需要弹出一个确认框
+      // 您当前的操作需要登录才能继续==》去登录、再逛逛
+      if (this.loginConfirm()) {
+        return
+      }
+      this.$router.push({
+        path: '/pay',
+        query: {
+          mode: 'buyNow',
+          goodsId: this.goodsId,
+          goodsSkuId: this.detail.skuList[0].goods_sku_id,
+          goodsNum: this.addCount
+        }
+      })
     }
   }
 }
